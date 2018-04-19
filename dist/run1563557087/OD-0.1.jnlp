@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" java-vm-args="-Djava.library.path="C:\Program Files\NetBeans 8.2\libraries\openCV" "  href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="OD-0.1.jar" size="8198" download="eager" />
+    <jar href="OD-0.1.jar" size="8092" download="eager" />
     <jar href="lib\opencv-341.jar" size="423917" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="OD-0.1" >
