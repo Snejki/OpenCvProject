@@ -1,11 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+TODO śledzenie obiektów 2 różnych kolorach
  */
 package od.pkg0.pkg1;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,10 +14,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -31,14 +33,32 @@ public class FXMLUIController implements Initializable {
 
     @FXML
     private Button start_btn;
-
     @FXML
     private ImageView currentFrame;
+    @FXML
+    private ImageView maskImg;
+    @FXML
+    private ImageView morphImg;
+    
+    @FXML
+    private Slider hueMin;
+    @FXML
+    private Slider hueMax;
+    @FXML
+    private Slider satMin;
+    @FXML
+    private Slider satMax;
+    @FXML
+    private Slider valMin;
+    @FXML
+    private Slider valMax;
+    
 
     private ScheduledExecutorService tim;
     private VideoCapture capt = new VideoCapture();
     private boolean camActive = false;
     private static int camId = 0;
+    
     
     private CascadeClassifier faceCascade;
     private int absFaceSize;
@@ -49,14 +69,12 @@ public class FXMLUIController implements Initializable {
         if (this.camActive == false) {
             this.capt.open(camId);
             this.camActive = true;
-            Runnable frameGrabber = new Runnable() {
-                @Override
-                public void run() {
-                    Mat frame = grabFrame();
-                    Image imgToShow = Utils.mat2Image(frame);
-                    updateImg(currentFrame, imgToShow);
-                    
-                }
+            Runnable frameGrabber = () -> {
+                Mat frame = grabFrame();
+                Image imgToShow = Utils.mat2Image(frame);
+                updateImg(currentFrame, imgToShow);
+                //updateImg(maskImg, imgToShow);
+                //updateImg(morphImg, imgToShow);
             };
 
             this.tim = Executors.newSingleThreadScheduledExecutor();
@@ -64,6 +82,7 @@ public class FXMLUIController implements Initializable {
 
             this.start_btn.setText("Stop");
         } else {
+            this.currentFrame.setImage(null);
             this.stopAcquisition();
             this.start_btn.setText("Start");
             this.camActive = false;
@@ -77,25 +96,73 @@ public class FXMLUIController implements Initializable {
         this.faceCascade = new CascadeClassifier();
         this.absFaceSize = 0;
         this.faceCascade.load("resources/haarcascades/haarcascade_frontalface_alt.xml"); 
-        //this.faceCascade.load("resources/lbpcascades/lbpcascade_frontalface.xml");
+        
     }
 
     private Mat grabFrame() {
+        
         Mat frame = new Mat();
-        try {
-            this.capt.read(frame);
+        Mat blurredImg = new Mat();
+        Mat hsvImg = new Mat();
+        Mat mask = new Mat();
+        Mat morphOutput = new Mat();
+        
+        this.capt.read(frame);
+        //wykrywanie twarzy
+        /*try {
             if(!frame.empty())
                 this.detectAndDisplay(frame);
              
 
         } catch (Exception e) {
-            System.err.println("obraz");
-        }
+            System.err.println("obraz" + e);
+        }*/
+        
+        //usuwa szum
+        Imgproc.blur(frame, blurredImg, new Size(7, 7));
+        
+        //zamienia na HSV
+        Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
+        
+        //obsługa sliderów
+        Scalar minV = new Scalar(this.hueMin.getValue(), this.satMin.getValue(), this.valMin.getValue());
+        Scalar maxV = new Scalar(this.hueMax.getValue(), this.satMax.getValue(), this.valMax.getValue());
+        
+        Core.inRange(hsvImg, minV, maxV, mask);
+        this.updateImg(this.maskImg, Utils.mat2Image(mask));
+        
+        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
+        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
+        
+        Imgproc.erode(mask, morphOutput, erodeElement);
+        Imgproc.erode(mask, morphOutput, erodeElement);
+        
+        Imgproc.dilate(mask, morphOutput, dilateElement);
+        Imgproc.dilate(mask, morphOutput, dilateElement);
+        
+        this.updateImg(this.morphImg, Utils.mat2Image(morphOutput));
+        frame = this.detect(morphOutput, frame);
+        
         return frame;
+        
+        
     }
 
     private void updateImg(ImageView view, Image img) {
         Utils.onFXThread(view.imageProperty(), img);
+    }
+    
+    private Mat detect(Mat m, Mat frame) {
+        List<MatOfPoint> ctr = new ArrayList<>();
+        Mat hie = new Mat();
+        Imgproc.findContours(m, ctr, hie, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+        
+        if (hie.size().height > 0 && hie.size().width > 0)
+{
+        for(int x = 0; x >= 0; x = (int) hie.get(0, x)[0])
+            Imgproc.drawContours(frame, ctr, x, new Scalar(0, 255, 0));
+}
+        return frame;
     }
 
     private void stopAcquisition() {
@@ -137,7 +204,7 @@ public class FXMLUIController implements Initializable {
         
         Rect[] facesA = faces.toArray();
         for(int i=0; i<facesA.length; i++)
-            Imgproc.rectangle(frame, facesA[i].tl(), facesA[i].br(), new Scalar(0, 255, 0), 3);        
+            Imgproc.rectangle(frame, facesA[i].tl(), facesA[i].br(), new Scalar(255, 255, 255), 3);        
     }
 
 }
