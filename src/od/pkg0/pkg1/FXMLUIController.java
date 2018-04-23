@@ -36,30 +36,43 @@ public class FXMLUIController implements Initializable {
     @FXML
     private ImageView currentFrame;
     @FXML
-    private ImageView maskImg;
+    private ImageView maskImgL;
     @FXML
-    private ImageView morphImg;
-    
+    private ImageView morphImgL;
     @FXML
-    private Slider hueMin;
+    private ImageView morphImgR;
+
     @FXML
-    private Slider hueMax;
+    private Slider hueMinL;
     @FXML
-    private Slider satMin;
+    private Slider hueMaxL;
     @FXML
-    private Slider satMax;
+    private Slider satMinL;
     @FXML
-    private Slider valMin;
+    private Slider satMaxL;
     @FXML
-    private Slider valMax;
-    
+    private Slider valMinL;
+    @FXML
+    private Slider valMaxL;
+
+    @FXML
+    private Slider hueMinR;
+    @FXML
+    private Slider hueMaxR;
+    @FXML
+    private Slider satMinR;
+    @FXML
+    private Slider satMaxR;
+    @FXML
+    private Slider valMinR;
+    @FXML
+    private Slider valMaxR;
 
     private ScheduledExecutorService tim;
     private VideoCapture capt = new VideoCapture();
     private boolean camActive = false;
     private static int camId = 0;
-    
-    
+
     private CascadeClassifier faceCascade;
     private int absFaceSize;
 
@@ -95,73 +108,85 @@ public class FXMLUIController implements Initializable {
         this.capt = new VideoCapture();
         this.faceCascade = new CascadeClassifier();
         this.absFaceSize = 0;
-        this.faceCascade.load("resources/haarcascades/haarcascade_frontalface_alt.xml"); 
-        
+        this.faceCascade.load("resources/haarcascades/haarcascade_frontalface_alt.xml");
+
     }
 
     private Mat grabFrame() {
-        
+
         Mat frame = new Mat();
         Mat blurredImg = new Mat();
         Mat hsvImg = new Mat();
         Mat mask = new Mat();
-        Mat morphOutput = new Mat();
-        
-        this.capt.read(frame);
-        //wykrywanie twarzy
-        /*try {
-            if(!frame.empty())
-                this.detectAndDisplay(frame);
-             
+        Mat morphOutputL = new Mat();
+        Mat morphOutputR = new Mat();
 
-        } catch (Exception e) {
-            System.err.println("obraz" + e);
-        }*/
-        
+        this.capt.read(frame);
+
         //usuwa szum
         Imgproc.blur(frame, blurredImg, new Size(7, 7));
-        
-        //zamienia na HSV
-        Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
-        
+
         //obsługa sliderów
-        Scalar minV = new Scalar(this.hueMin.getValue(), this.satMin.getValue(), this.valMin.getValue());
-        Scalar maxV = new Scalar(this.hueMax.getValue(), this.satMax.getValue(), this.valMax.getValue());
-        
-        Core.inRange(hsvImg, minV, maxV, mask);
-        this.updateImg(this.maskImg, Utils.mat2Image(mask));
-        
+        Scalar minVL = new Scalar(this.hueMinL.getValue(), this.satMinL.getValue(), this.valMinL.getValue());
+        Scalar maxVL = new Scalar(this.hueMaxL.getValue(), this.satMaxL.getValue(), this.valMaxL.getValue());
+
+        Scalar minVR = new Scalar(this.hueMinR.getValue(), this.satMinR.getValue(), this.valMinR.getValue());
+        Scalar maxVR = new Scalar(this.hueMaxR.getValue(), this.satMaxR.getValue(), this.valMaxR.getValue());
+
         Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
         Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
+
+
+        //Lewy obraz
+            //zamienia na HSV
+            Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
+            
+            Core.inRange(hsvImg, minVL, maxVL, mask);
+            
+            Imgproc.erode(mask, morphOutputL, erodeElement);
+            Imgproc.erode(mask, morphOutputL, erodeElement);
+
+            Imgproc.dilate(mask, morphOutputL, dilateElement);
+            Imgproc.dilate(mask, morphOutputL, dilateElement);
+
+            this.updateImg(this.morphImgL, Utils.mat2Image(morphOutputL));
+
+        //prawy obraz
+            //zamienia na HSV
+            Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
+            
+            Core.inRange(hsvImg, minVR, maxVR, mask);
+            
+            Imgproc.erode(mask, morphOutputR, erodeElement);
+            Imgproc.erode(mask, morphOutputR, erodeElement);
+
+            Imgproc.dilate(mask, morphOutputR, dilateElement);
+            Imgproc.dilate(mask, morphOutputR, dilateElement);
+
+            this.updateImg(this.morphImgR, Utils.mat2Image(morphOutputR));
+
         
-        Imgproc.erode(mask, morphOutput, erodeElement);
-        Imgproc.erode(mask, morphOutput, erodeElement);
-        
-        Imgproc.dilate(mask, morphOutput, dilateElement);
-        Imgproc.dilate(mask, morphOutput, dilateElement);
-        
-        this.updateImg(this.morphImg, Utils.mat2Image(morphOutput));
-        frame = this.detect(morphOutput, frame);
-        
+            
+        frame = this.detect(morphOutputL, frame, new Scalar(0, 255, 0));
+        frame = this.detect(morphOutputR, frame, new Scalar(255, 0, 0));
+
         return frame;
-        
-        
     }
 
     private void updateImg(ImageView view, Image img) {
         Utils.onFXThread(view.imageProperty(), img);
     }
-    
-    private Mat detect(Mat m, Mat frame) {
+
+    private Mat detect(Mat m, Mat frame, Scalar color) {
         List<MatOfPoint> ctr = new ArrayList<>();
         Mat hie = new Mat();
         Imgproc.findContours(m, ctr, hie, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
-        
-        if (hie.size().height > 0 && hie.size().width > 0)
-{
-        for(int x = 0; x >= 0; x = (int) hie.get(0, x)[0])
-            Imgproc.drawContours(frame, ctr, x, new Scalar(0, 255, 0));
-}
+
+        if (hie.size().height > 0 && hie.size().width > 0) {
+            for (int x = 0; x >= 0; x = (int) hie.get(0, x)[0]) {
+                Imgproc.drawContours(frame, ctr, x, color);
+            }
+        }
         return frame;
     }
 
@@ -182,29 +207,27 @@ public class FXMLUIController implements Initializable {
             this.capt.release();
         }
     }
-    
-    private void detectAndDisplay(Mat frame)
-    {
+
+    private void detectAndDisplay(Mat frame) {
         MatOfRect faces = new MatOfRect();
         Mat grayFrame = new Mat();
-        
+
         Imgproc.cvtColor(frame, grayFrame, Imgproc.COLOR_BGR2GRAY);
         Imgproc.equalizeHist(grayFrame, grayFrame);
-        
-        if(this.absFaceSize == 0)
-        {
+
+        if (this.absFaceSize == 0) {
             int wys = grayFrame.rows();
-            if(Math.round(wys * 0.2f)>0)
-            {
+            if (Math.round(wys * 0.2f) > 0) {
                 this.absFaceSize = Math.round(wys * 0.2f);
             }
         }
-        
+
         this.faceCascade.detectMultiScale(grayFrame, faces, 1.1, 2, Objdetect.CASCADE_SCALE_IMAGE, new Size(this.absFaceSize, this.absFaceSize), new Size());
-        
+
         Rect[] facesA = faces.toArray();
-        for(int i=0; i<facesA.length; i++)
-            Imgproc.rectangle(frame, facesA[i].tl(), facesA[i].br(), new Scalar(255, 255, 255), 3);        
+        for (int i = 0; i < facesA.length; i++) {
+            Imgproc.rectangle(frame, facesA[i].tl(), facesA[i].br(), new Scalar(255, 255, 255), 3);
+        }
     }
 
 }
