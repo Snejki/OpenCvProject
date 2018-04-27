@@ -1,5 +1,5 @@
 /*
-TODO śledzenie obiektów 2 różnych kolorach
+TODO Automatyczne budowanie modelu koloru
  */
 package od.pkg0.pkg1;
 
@@ -14,9 +14,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -35,8 +37,8 @@ public class FXMLUIController implements Initializable {
     private Button start_btn;
     @FXML
     private ImageView currentFrame;
-    @FXML
-    private ImageView maskImgL;
+    //@FXML
+    //private ImageView maskImgL;
     @FXML
     private ImageView morphImgL;
     @FXML
@@ -68,6 +70,11 @@ public class FXMLUIController implements Initializable {
     @FXML
     private Slider valMaxR;
 
+    @FXML
+    private ColorPicker colorPickerL;
+    @FXML
+    private ColorPicker colorPickerR; 
+
     private ScheduledExecutorService tim;
     private VideoCapture capt = new VideoCapture();
     private boolean camActive = false;
@@ -75,10 +82,16 @@ public class FXMLUIController implements Initializable {
 
     private CascadeClassifier faceCascade;
     private int absFaceSize;
+    
+    private Color c;
+    private Color d;
 
     @FXML
     protected void startCamera(ActionEvent e) {
 
+        c = colorPickerL.getValue();
+        d = colorPickerR.getValue();
+        
         if (this.camActive == false) {
             this.capt.open(camId);
             this.camActive = true;
@@ -112,6 +125,48 @@ public class FXMLUIController implements Initializable {
 
     }
 
+    @FXML
+    protected void ChangeColorL(ActionEvent e) {
+        c = colorPickerL.getValue();
+        if (c.getHue() < 10) {
+            hueMinL.setValue(c.getHue() / 2);
+            hueMaxL.setValue(c.getHue() / 2 + 10);
+        } else if (c.getHue() > 350) {
+            hueMinL.setValue(c.getHue() / 2 - 10);
+            hueMaxL.setValue(c.getHue() / 2);
+        } else {
+            hueMinL.setValue(c.getHue() / 2 - 5);
+            hueMaxL.setValue(c.getHue() / 2 + 5);
+        }
+
+        satMinL.setValue(c.getSaturation() * 255);
+        satMaxL.setValue(c.getSaturation() * 255);
+
+        valMinL.setValue(c.getBrightness() * 255);
+        valMaxL.setValue(c.getBrightness() * 255);
+    }
+
+    @FXML
+    protected void ChangeColorR(ActionEvent e) {
+        d = colorPickerR.getValue();
+        if (d.getHue() < 10) {
+            hueMinR.setValue(d.getHue() / 2);
+            hueMaxR.setValue(d.getHue() / 2 + 10);
+        } else if (d.getHue() > 350) {
+            hueMinR.setValue(d.getHue() / 2 - 10);
+            hueMaxR.setValue(d.getHue() / 2);
+        } else {
+            hueMinR.setValue(d.getHue() / 2 - 5);
+            hueMaxR.setValue(d.getHue() / 2 + 5);
+        }
+
+        satMinR.setValue(d.getSaturation() * 255);
+        satMaxR.setValue(d.getSaturation() * 255);
+
+        valMinR.setValue(d.getBrightness() * 255);
+        valMaxR.setValue(d.getBrightness() * 255);
+    }
+
     private Mat grabFrame() {
 
         Mat frame = new Mat();
@@ -136,39 +191,39 @@ public class FXMLUIController implements Initializable {
         Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
         Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
 
-
         //Lewy obraz
-            //zamienia na HSV
-            Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
-            
-            Core.inRange(hsvImg, minVL, maxVL, mask);
-            
-            Imgproc.erode(mask, morphOutputL, erodeElement);
-            Imgproc.erode(mask, morphOutputL, erodeElement);
+        //zamienia na HSV
+        Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
 
-            Imgproc.dilate(mask, morphOutputL, dilateElement);
-            Imgproc.dilate(mask, morphOutputL, dilateElement);
+        Core.inRange(hsvImg, minVL, maxVL, mask);
 
-            this.updateImg(this.morphImgL, Utils.mat2Image(morphOutputL));
+        Imgproc.erode(mask, morphOutputL, erodeElement);
+        Imgproc.erode(mask, morphOutputL, erodeElement);
+
+        Imgproc.dilate(mask, morphOutputL, dilateElement);
+        Imgproc.dilate(mask, morphOutputL, dilateElement);
+
+        this.updateImg(this.morphImgL, Utils.mat2Image(morphOutputL));
 
         //prawy obraz
-            //zamienia na HSV
-            Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
-            
-            Core.inRange(hsvImg, minVR, maxVR, mask);
-            
-            Imgproc.erode(mask, morphOutputR, erodeElement);
-            Imgproc.erode(mask, morphOutputR, erodeElement);
+        //zamienia na HSV
+        Imgproc.cvtColor(blurredImg, hsvImg, Imgproc.COLOR_BGR2HSV);
 
-            Imgproc.dilate(mask, morphOutputR, dilateElement);
-            Imgproc.dilate(mask, morphOutputR, dilateElement);
+        Core.inRange(hsvImg, minVR, maxVR, mask);
 
-            this.updateImg(this.morphImgR, Utils.mat2Image(morphOutputR));
+        Imgproc.erode(mask, morphOutputR, erodeElement);
+        Imgproc.erode(mask, morphOutputR, erodeElement);
+
+        Imgproc.dilate(mask, morphOutputR, dilateElement);
+        Imgproc.dilate(mask, morphOutputR, dilateElement);
+
+        this.updateImg(this.morphImgR, Utils.mat2Image(morphOutputR));
 
         
-            
-        frame = this.detect(morphOutputL, frame, new Scalar(0, 255, 0));
-        frame = this.detect(morphOutputR, frame, new Scalar(255, 0, 0));
+        frame = this.detect(morphOutputL, frame, new Scalar(c.invert().getBlue()*255, c.invert().getGreen()*255, c.invert().getRed()*255));
+        frame = this.detect(morphOutputR, frame, new Scalar(d.invert().getBlue()*255, d.invert().getGreen()*255, d.invert().getRed()*255));
+        
+        
 
         return frame;
     }
@@ -184,7 +239,7 @@ public class FXMLUIController implements Initializable {
 
         if (hie.size().height > 0 && hie.size().width > 0) {
             for (int x = 0; x >= 0; x = (int) hie.get(0, x)[0]) {
-                Imgproc.drawContours(frame, ctr, x, color);
+                Imgproc.drawContours(frame, ctr, x, color, 3);
             }
         }
         return frame;
