@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="467.0" prefWidth="645.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="detekcjaObiektow.FXMLUIController">
+   <right>
+      <HBox prefHeight="442.0" prefWidth="181.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox prefHeight="200.0" prefWidth="100.0">
+               <children>
+                  <Label text="Hue min">
+                     <VBox.margin>
+                        <Insets top="90.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Slider fx:id="hueMinL" blockIncrement="1.0" max="180.0" value="70.0">
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </Slider>
+                  <Label text="Hue max" />
+                  <Slider fx:id="hueMaxL" blockIncrement="1.0" max="180.0" value="75.0" />
+                  <Label text="Saturation min" />
+                  <Slider fx:id="satMinL" blockIncrement="1.0" max="255.0" value="200.0" />
+                  <Label text="Saturation max" />
+                  <Slider fx:id="satMaxL" blockIncrement="1.0" max="255.0" value="210.0" />
+                  <Label text="Value min" />
+                  <Slider fx:id="valMinL" blockIncrement="1.0" max="255.0" value="230.0" />
+                  <Label text="Value max" />
+                  <Slider fx:id="valMaxL" blockIncrement="1.0" max="255.0" value="240.0" />
+                  <ColorPicker fx:id="colorPickerL" onAction="#ChangeSlidersL" prefHeight="25.0" prefWidth="43.0">
+                     <VBox.margin>
+                        <Insets left="11.0" />
+                     </VBox.margin>
+                  </ColorPicker>
+               </children>
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </VBox>
+            <VBox prefHeight="200.0" prefWidth="100.0">
+               <children>
+                  <Label text="Hue min">
+                     <VBox.margin>
+                        <Insets top="90.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Slider fx:id="hueMinR" blockIncrement="1.0" max="180.0" value="70.0">
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </Slider>
+                  <Label text="Hue max" />
+                  <Slider fx:id="hueMaxR" blockIncrement="1.0" max="180.0" value="75.0" />
+                  <Label text="Saturation min" />
+                  <Slider fx:id="satMinR" blockIncrement="1.0" max="255.0" value="200.0" />
+                  <Label text="Saturation max" />
+                  <Slider fx:id="satMaxR" blockIncrement="1.0" max="255.0" value="210.0" />
+                  <Label text="Value min" />
+                  <Slider fx:id="valMinR" blockIncrement="1.0" max="255.0" value="230.0" />
+                  <Label text="Value max" />
+                  <Slider fx:id="valMaxR" blockIncrement="1.0" max="255.0" value="240.0" />
+                  <ColorPicker fx:id="colorPickerR" onAction="#ChangeSlidersR" prefHeight="25.0" prefWidth="43.0">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </ColorPicker>
+               </children>
+            </VBox>
+         </children>
+         <BorderPane.margin>
+            <Insets right="10.0" />
+         </BorderPane.margin>
+      </HBox>
+   </right>
+   <left>
+      <VBox prefHeight="363.0" prefWidth="491.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="currentFrame" fitHeight="240.0" fitWidth="320.0" pickOnBounds="true" preserveRatio="true">
+               <VBox.margin>
+                  <Insets left="95.0" top="10.0" />
+               </VBox.margin></ImageView>
+            <HBox prefHeight="110.0" prefWidth="491.0">
+               <children>
+                  <ImageView fx:id="morphImgL" fitHeight="150.0" fitWidth="240.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="morphImgR" fitHeight="150.0" fitWidth="240.0" pickOnBounds="true" preserveRatio="true">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin></ImageView>
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="10.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
+   </left>
+   <bottom>
+      <Button fx:id="start_btn" mnemonicParsing="false" onAction="#startCamera" text="Start" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="10.0" />
+         </BorderPane.margin>
+      </Button>
+   </bottom>
+</BorderPane>
