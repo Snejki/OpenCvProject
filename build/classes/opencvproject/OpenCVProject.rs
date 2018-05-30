@@ -1,2 +1,0 @@
-JPanelOpenCV
-OpenCVProject
