@@ -27,7 +27,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
-
+/** Klasa kontrolera aplikacji.*/
 public class FXMLUIController implements Initializable {
 
     @FXML
@@ -70,9 +70,9 @@ public class FXMLUIController implements Initializable {
     @FXML
     private ColorPicker colorPickerR;
 
-    private ScheduledExecutorService tim;
-    private VideoCapture capt = new VideoCapture();
-    private boolean camActive = false;
+    protected ScheduledExecutorService tim;
+    protected VideoCapture capt = new VideoCapture();
+    protected boolean camActive = false;
     private static int camId = 0;
     private Color c;
     private Color d;
@@ -83,11 +83,13 @@ public class FXMLUIController implements Initializable {
     private Image img;
     private int pixelCounter;
 
+    /** Uruchamia konstruktor dla zmiennej przechowującej obiekt kamery*/
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.capt = new VideoCapture();
     }
 
+    /** Odpowiada za funkcje przycisku start/stop uruchomienia kamery. Przypisuje do zmiennych wartości kolorów z ColorPickerów*/
     @FXML
     protected void startCamera(ActionEvent e) {
         c = colorPickerL.getValue();
@@ -104,7 +106,7 @@ public class FXMLUIController implements Initializable {
 
             this.tim = Executors.newSingleThreadScheduledExecutor();
             this.tim.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
-
+            /** Obsługa wykrywania obiektów poprzez ich zaznaczenie kursorem na ekranie*/
             currentFrame.setOnMousePressed(ev -> {
 
                 System.out.println((int) ev.getX() + "-" + (int) ev.getY());
@@ -112,7 +114,7 @@ public class FXMLUIController implements Initializable {
                 System.out.println((int) img.getWidth() + "-" + (int) img.getHeight());
 
                 pr = img.getPixelReader();
-
+            /** Zbudowanie modelu koloru na podstawie  zaznaczonego piksela i maski 5x5 wokół niego. Z kolorów wyciągana jest wartość uśrediona i następnie zapisywana do modelu*/
                 pixelCounter = 0;
                 for (int coordY = -2; coordY <= 2; coordY++) {
                     for (int coordX = -2; coordX <= 2; coordX++) {
@@ -137,6 +139,7 @@ public class FXMLUIController implements Initializable {
                 sampleApprox = Color.color(r, g, b);
                 //System.out.println("R:" + sampleApprox.getRed() + "\nG:" + sampleApprox.getGreen() + "\nB:" + sampleApprox.getBlue());
 
+                /** Detekcja naciśnięcia lewego lub prawego przycisku myszy. Zależnie od naciśnięcia budowany jest model dla obiektu pierwszego lub drugiego*/
                 if (ev.isPrimaryButtonDown()) {
                     colorPickerL.setValue(sampleApprox);
                     ChangeSlidersL();
@@ -158,7 +161,7 @@ public class FXMLUIController implements Initializable {
         }
 
     }
-
+/** Metoda odpowiada za ustalenie wartości dla modelu obiektu pierwszego przy z wykorzystaniem suwaków. Dodatkowo ustalone są pewne przedziały ułatwiające detekcję.*/
     public void ChangeSlidersL() {
         c = colorPickerL.getValue();
         if (c.getHue() < 10) {
@@ -195,7 +198,7 @@ public class FXMLUIController implements Initializable {
         }
 
     }
-
+/** Metoda odpowiada za ustalenie wartości dla modelu obiektu drugiego przy z wykorzystaniem suwaków. Dodatkowo ustalone są pewne przedziały ułatwiające detekcję.*/
     public void ChangeSlidersR() {
         d = colorPickerR.getValue();
         if (d.getHue() < 10) {
@@ -231,7 +234,7 @@ public class FXMLUIController implements Initializable {
             valMaxL.setValue((c.getBrightness() * 255) + 50);
         }
     }
-
+/** Metoda odczytuje aktualną klatkę z kamery i poddaje ją analizie i obróbce.*/
     private Mat grabFrame() {
 
         Mat frame = new Mat();
@@ -290,6 +293,7 @@ public class FXMLUIController implements Initializable {
         return frame;
     }
 
+    //* Metoda aktualizacji obrazu z kamery*/
     private void updateImg(ImageView view, Image img) {
         ImageHandling.onFXThread(view.imageProperty(), img);
     }
@@ -306,8 +310,8 @@ public class FXMLUIController implements Initializable {
         }
         return frame;
     }
-
-    private void stopAcquisition() {
+/** Metoda odpowiedzialna za zakończenie odczytu obrazu z kamery, jest wywoływana w metodzie Start*/
+    protected void stopAcquisition() {
         if (this.tim != null && !this.tim.isShutdown()) {
             try {
 
@@ -322,6 +326,8 @@ public class FXMLUIController implements Initializable {
         if (this.capt.isOpened()) {
 
             this.capt.release();
+
+            
         }
     }
 

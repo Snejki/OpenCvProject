@@ -15,6 +15,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
+/** Odpowiada za operacje przekonwertowania obrazu z kamery do macierzy wykorzystywanej do detekcji*/
 public final class ImageHandling {
 
     public static Image mat2Image(Mat frame) {
@@ -26,13 +27,15 @@ public final class ImageHandling {
         }
     }
 
+    /** Uruchamia interfejs funkcyjny do obsługi kamery w danym wątku*/
     public static <T> void onFXThread(final ObjectProperty<T> property, final T value) {
         Platform.runLater(() -> {
             property.set(value);
         });
     }
-
-    private static BufferedImage matToBufferedImage(Mat original) {
+    
+    /** Metoda uruchamiana po wszystkich przekształceniach i detekcjach. Konwertuje macierz do obrazu.*/
+    public static BufferedImage matToBufferedImage(Mat original) {
         // init
         BufferedImage image = null;
         int width = original.width(), height = original.height(), channels = original.channels();

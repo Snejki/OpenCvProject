@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" java-vm-args="-Djava.library.path=".";"x64" "  href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="DetekcjaObiektow.jar" size="9521" download="eager" />
+    <jar href="DetekcjaObiektow.jar" size="9464" download="eager" />
     <jar href="lib\opencv-341.jar" size="423917" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="DetekcjaObiektow" >

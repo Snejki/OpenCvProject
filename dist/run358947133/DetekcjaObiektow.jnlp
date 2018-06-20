@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="DetekcjaObiektow.jnlp">
+  <information>
+    <title>DetekcjaObiektow</title>
+    <vendor>Piotr</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" java-vm-args="-Djava.library.path=".";"x64" "  href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="DetekcjaObiektow.jar" size="9859" download="eager" />
+    <jar href="lib\opencv-341.jar" size="423917" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="DetekcjaObiektow" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="detekcjaObiektow.DetekcjaObiektow"  name="DetekcjaObiektow" />
+  <update check="always"/>
+</jnlp>
